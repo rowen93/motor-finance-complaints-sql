@@ -8,22 +8,29 @@ The project models a fictional motor finance complaints database. It will be dev
 ## Current progress
 
 * Created relational database structure
-* Created Customers, Vehicles, FinanceAgreements, Complaints tables
-* Added primary keys
-* Added foreign key relationships
+* Created Customers, Vehicles, Finance Agreements, Complaints tables
+* Added primary keys and foreign key relationships
 * Added fictional sample data across all four tables
-* Set up the project with Git and GitHub for version control
+* Used filtering and sorting to investigate complaint and finance data
+* Used aggregate functions including COUNT, SUM and AVG
+* Used GROUPBY to summarise and compare data
+* Used INNER JOIN to analyse data across related tables
+* Used CASE expressions to categorise data into meaningful business bands
+* Analysed complaint volumes, outcomes, finance characteristics and SLA performance
+* Added business-style descriptions and analysis comments to queries
+* Added AnalysisQueries.sql containing SQL analysis and business-focused queries  
+* Used Git and GitHub for version control
 
 ## Next steps
 
-Begin querying and analysing the data using SQL, including:
+Continue developing intermediate SQL skills, including:
 
-* Filtering and sorting complaint data
-* Aggregate functions and GROUP BY
-* JOINs across related tables
-* Complaint volume and outcome analysis
-* SLA performance analysis
-* MI-Style reporting 
-
-
+* LEFT JOIN and other JOIN techniques
+* HAVING
+* DATE functions
+* Subqueries and CTEs
+* Window functions
+* Further business-style analysis and MI reporting
+* Prepare the SQL dataset for Power BI
+* Build an interactive Power BI dashboard
 
