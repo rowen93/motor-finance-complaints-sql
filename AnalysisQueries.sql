@@ -352,7 +352,6 @@ ORDER BY [Total Upheld] DESC;
 
 -- Groups upheld complaints by finance type and finance amount band to identify which agreement value ranges have the highest number 
 -- of upheld complaints.
-
 SELECT fin.FinanceType,
 CASE 
    WHEN fin.FinanceAmount < 20000 THEN 'Lower Value'
@@ -549,6 +548,448 @@ ORDER BY [Total Complaints] DESC;
 -- Analysis: medium value agreements had the highest complaint volume (9),
 -- followed closely by high value agreements (8).
 -- Low value agreements had the lowest complaint volume (3)
+
+
+-- Business request: 
+-- Show all finance agreements and any associated complaints,
+-- including agreements that have never received a complaint.
+SELECT fin.AgreementID,
+       fin.FinanceType,
+       comp.ComplaintID
+FROM FinanceAgreements AS fin 
+LEFT JOIN Complaints AS comp 
+  ON fin.AgreementID = comp.AgreementID;
+-- Analysis:
+-- The LEFT JOIN returned all finance agreements, including those without a matching complaint.
+-- Agreements 16 and 17 have no associated complaint and therefore return NULL for ComplaintID.
+-- Agreements with multiple complaints appear more than once, with one row returned for each associated complaint.
+
+-- Business request:
+-- Show all finance agreements that have no associated complaint.
+SELECT fin.AgreementID,
+       fin.FinanceType,
+       comp.ComplaintID
+FROM FinanceAgreements AS fin 
+LEFT JOIN Complaints AS comp 
+  ON fin.AgreementID = comp.AgreementID
+WHERE ComplaintID IS NULL;
+-- Analysis:
+-- Two finance agreements have no associated complaint:
+-- One PCP agreement and one HP agreement.
+
+-- Business Request:
+-- Show all customers and their registered vehicle,
+-- including customers who don't have a vehicle recorded.
+SELECT cust.CustomerID,
+       cust.CustomerName,
+       veh.RegistrationPlate
+FROM Customers AS cust
+LEFT JOIN Vehicles AS veh
+  ON cust.CustomerID = veh.CustomerID;
+-- Analysis:
+-- All 15 customers currently have a registered vehicle.
+-- No customers returned a NULL RegistrationPlate. 
+
+-- Business request:
+-- Show the number of complaints associated with each finance type,
+-- While including all finance agreements in the analysis.
+SELECT fin.FinanceType,
+COUNT (comp.ComplaintID) AS [Total Complaints]
+FROM FinanceAgreements AS fin 
+LEFT JOIN Complaints AS comp
+  ON fin.AgreementID = comp.AgreementID
+GROUP BY FinanceType;
+-- Analysis
+-- PCP agreements had the highest complaint volume with 14 complaints,
+-- compared with 6 complaints associated with HP agreements.
+
+
+-- Business request:
+-- Identify all finance agreements that never recieved a complaint,
+-- including the finance type, amount and current agreement status.
+SELECT fin.AgreementID,
+       fin.FinanceType,
+       fin.FinanceAmount,
+       fin.AgreementStatus
+FROM FinanceAgreements AS fin
+LEFT JOIN Complaints AS comp
+  ON fin.AgreementID = comp.AgreementID
+WHERE comp.ComplaintID IS NULL;
+
+
+-- Analysis:
+-- Two finance agreements have no associated complaint.
+-- Agreement 16 is an active PCP agreement for £18,000.
+-- Agreement 17 is a settled HP agreement for £12,500.
+
+-- Business request:
+-- Compare the average value of finance agreements that have received 
+-- complaints with those that have not recieved a complaint.
+SELECT 
+CASE 
+  WHEN comp.ComplaintID IS NOT NULL THEN 'Has Complaint'
+  ELSE 'No Complaint'
+END AS [Complaint Status],
+AVG (fin.FinanceAmount) AS [Average Finance Amount]
+FROM FinanceAgreements AS fin
+LEFT JOIN Complaints AS comp 
+  ON fin.AgreementID = comp.AgreementID
+GROUP BY CASE 
+  WHEN comp.ComplaintID IS NOT NULL THEN 'Has Complaint'
+  ELSE 'No Complaint'
+END
+ORDER BY [Average Finance Amount] DESC;
+-- Analysis:
+--Agreements with no complaint had an average finance amount of £15,250.
+-- The initial average for agreements with complaints was £23,190.
+-- However, agreements with multiple complaints appear more tha once 
+-- following the JOIN, which can affect the calculated average.
+-- Further analysis is required to calculate the average using each 
+-- finance agreement only once.
+
+--======================================================================================================================
+-- HAVING AND JOINS 
+--======================================================================================================================
+
+-- Business request:
+-- Identify complaint types with more than 4 complaints.
+SELECT ComplaintType,
+COUNT (*) AS [Total Complaints]
+FROM Complaints
+GROUP BY ComplaintType
+HAVING COUNT (*) > 4;
+-- Analysis:
+-- Affordability and Customer Service had the highest number of complaint volumes,
+-- with 5 complaints each
+-- No other complaint types had more than 4 complaints.
+
+
+-- Business request:
+-- Identify complaint types with more than 2 resolved complaints.
+SELECT ComplaintType,
+COUNT (*) AS [Resolved Complaints]
+FROM Complaints 
+WHERE Status = 'Resolved'
+GROUP BY ComplaintType 
+HAVING COUNT (*) > 2;
+-- Analysis:
+-- Affordability, Commission Disclosure and Early Settlement
+-- each had 3 resolved complaints.
+-- No other complaint types had more than 2 resolved complaints.
+
+
+-- Business request:
+-- Review active finance agreements by finance type and show the average amount,
+-- including only finance types where the average value is greater than £20,000.
+SELECT FinanceType,
+AVG (FinanceAmount) AS [Average Finance Amount]
+FROM FinanceAgreements
+WHERE AgreementStatus = 'Active'
+GROUP BY FinanceType
+HAVING AVG (FinanceAmount) > 20000;
+-- Analysis:
+-- PCP was the only finance type with an average finance amount greater than £20,000,
+-- with an average value of approximatley £23,043.
+-- HP had an average finance amount below £20,000 and therefore excluded from the results.
+
+
+-- Business request:
+-- Review settled finance agreements by finance type and show the total amount,
+-- including only finance types where the total value is greater than £40,000.
+SELECT FinanceType,
+SUM (FinanceAmount) AS [Total Finance Amount]
+FROM FinanceAgreements
+WHERE AgreementStatus = 'Settled'
+GROUP BY FinanceType
+HAVING SUM (FinanceAmount) > 40000;
+-- Analysis:
+-- Both PCP and HP had a Total Finance Amount above 40,000
+-- PCP had the highest total finance amount at £84,500.
+-- HP had a total finance amount of £47,100
+
+
+-- Business request:
+-- Compare complaint volumes by finance type and show the number of complaints associated
+-- with each type, including only finance types with more than 10 complaints
+SELECT fin.FinanceType, 
+COUNT (*) AS [Total Complaints]
+FROM Complaints AS comp
+INNER JOIN FinanceAgreements AS fin
+  ON comp.AgreementID = fin.AgreementID
+GROUP BY fin.FinanceType
+HAVING COUNT (*) > 10;
+-- Analysis:
+-- PCP was the only finance type with more than 10 complaints,
+-- with a total of 14 complaints.
+-- HP did not meet the threshold and was therefore excluded from the results.
+
+
+-- Business request:
+-- Review complaints by finance type and show the number of resolved complaints 
+-- associated with each type, including only finance types with more than 3 resolved complaints.
+SELECT fin.FinanceType,
+COUNT (*) AS [Total Resolved Complaints]
+FROM Complaints AS comp
+INNER JOIN FinanceAgreements AS fin 
+  ON comp.AgreementID = fin.AgreementID 
+WHERE comp.Status = 'Resolved'
+GROUP BY fin.FinanceType
+HAVING COUNT (*) >3;
+-- Analysis:
+-- PCP and HP both are over the threshold of 3 resolved complaints.
+-- PCP has the highest volume of complaints (8).
+-- HP has 5 complaints.
+
+
+-- Business reqiest:
+-- Review all finance agreements by finance type and show the number of 
+-- complaints associated with each type, including agreements with no complaint.
+-- Only include finance types with more than 5 complaints.
+SELECT fin.FinanceType,
+COUNT (comp.ComplaintID) AS [Total Complaints]
+FROM FinanceAgreements AS fin 
+LEFT JOIN Complaints AS comp
+  ON fin.AgreementID = comp.AgreementID
+GROUP BY fin.FinanceType
+HAVING COUNT (comp.ComplaintID) > 5;
+-- Analysis:
+-- Both HP and PCP have more than 5 associated complaints. 
+-- PCP had the highest complaint volume, with 14 complaints.
+-- HP had 6 complaints.
+
+
+-- Business request:
+-- Group complaints by the value of the associated finance agreement.
+-- Agreements below £20,000 are classed as Lower Value and agreements
+-- of £20,000 or more are classed as Higher Value.
+-- Only include value bands with more than 5 complaints.
+SELECT
+CASE 
+  WHEN fin.FinanceAmount < 20000 THEN 'Lower Value'
+  ELSE 'Higher Value'
+END AS [Value Band],
+COUNT (comp.ComplaintID) AS [Total Complaints]
+FROM FinanceAgreements AS fin 
+LEFT JOIN Complaints AS comp
+  ON fin.AgreementID = comp.AgreementID 
+GROUP BY 
+CASE 
+  WHEN fin.FinanceAmount < 20000 THEN 'Lower Value'
+  ELSE 'Higher Value'
+END
+HAVING COUNT (comp.ComplaintID) > 5;
+-- Analysis:
+-- Both the Higher Value and Lower Value bands met the threshold of more than 5 complaints.
+-- Higher Value Band had the highest complaint volume, with 14 complaints.
+-- Lower Value Band had 6 complaints.
+
+
+-- Business request:
+-- Review resolved complaints by finance type. Show the average finance amount 
+-- associated with resolved complaints for each finance type.
+-- Include only finance types where the average is greater than £20,000.
+SELECT fin.FinanceType,
+AVG (fin.FinanceAmount) AS [Average Finance Amount]
+FROM FinanceAgreements AS fin 
+INNER JOIN Complaints AS comp
+  ON fin.AgreementID = comp.AgreementID
+WHERE comp.Status = 'Resolved'
+GROUP BY fin.FinanceType 
+HAVING AVG (fin.FinanceAmount) > 20000;
+-- Analysis:
+-- PCP was the only finance type with an average finance amount greater than £20,000.
+-- PCP had an average finance amount of approximatley £25,163.
+-- HP had an average value below the £20,000 threshold and therefore was excluded from the results.
+-- Further analysis is required to calculate the average without finance agreements being duplicated by 
+-- multiple resolved complaints.
+
+
+--========================================================================================================
+-- MULTI-TABLE JOINS
+--========================================================================================================
+
+-- Business request:
+-- Show each complaint alongside the customer's name and the 
+-- finance type of the associated finance agreement.
+SELECT comp.ComplaintID,
+       cust.CustomerName,
+       fin.FinanceType
+FROM Complaints AS comp
+INNER JOIN Customers AS cust
+  ON comp.CustomerID = cust.CustomerID
+INNER JOIN FinanceAgreements AS fin 
+  ON comp.AgreementID = fin.AgreementID;
+-- Analysis:
+-- The query returned all 20 complaints with the associated 
+-- customer name and finance type.
+
+-- Business request:
+-- Review resolved complaints and show the customer's name, complaint type,
+-- and the make and model of the vehicle associated with the finance agreement.
+SELECT cust.CustomerName,
+       comp.ComplaintType,
+       veh.Model,
+       veh.Make
+FROM Complaints AS comp
+INNER JOIN FinanceAgreements AS fin
+  ON comp.AgreementID = fin.AgreementID
+INNER JOIN Vehicles AS veh
+  ON fin.VehicleID = veh.VehicleID
+INNER JOIN Customers AS cust
+  ON comp.CustomerID = cust.CustomerID
+WHERE comp.Status = 'Resolved';
+-- Analysis:
+-- The query returned all 13 resolved complaints with the associated
+-- customer's name, complaint type and the make and model of the vehicle
+-- linked to the relevant finance agreement.
+
+
+-- Business Request:
+-- Identify all resolved motor finance complaints, Showing the complaint ID, 
+-- customer name, finance type and the make and model of the vehicle involved.
+SELECT cust.CustomerName,
+       comp.ComplaintID,
+       fin.FinanceType,
+       veh.Make,
+       veh.Model
+FROM Complaints AS comp
+INNER JOIN Customers AS cust 
+  ON comp.CustomerID = cust.CustomerID
+INNER JOIN FinanceAgreements AS fin
+  ON comp.AgreementID = fin.AgreementID 
+INNER JOIN Vehicles AS veh
+  ON fin.VehicleID = veh.VehicleID 
+WHERE comp.Status = 'Resolved';
+-- Analysis:
+-- The query returned 13 resolved complaints. By joining four tables, we can identify the customer,
+-- finance type and specific vehicles linked to each complaint. Customers may appear more than once 
+-- where they have multiple resolved complaints.
+
+
+-- Business request:
+-- Display all finance agreements, including the customer name, 
+-- vehicle make and model, and associated complaint ID. 
+-- Include agreements that have not received any complaints.
+SELECT cust.CustomerName,
+       fin.AgreementID,
+       veh.Make,
+       veh.Model,
+       comp.ComplaintID
+FROM FinanceAgreements AS fin
+INNER JOIN Customers AS cust
+  ON fin.CustomerID = cust.CustomerID
+LEFT JOIN Complaints AS comp
+  ON fin.AgreementID = comp.AgreementID
+INNER JOIN Vehicles AS veh 
+  ON fin.VehicleID = veh.VehicleID;
+-- Analysis:
+-- The query returned 22 rows across 17 finanace agreements.
+-- Some agreements appear multiple times because they have 
+-- more than one associated complaint.
+-- Agreements 16 and 17 have NULL complaint ID values,
+-- confirming that no complaints have been recorded against them.
+-- The LEFT JOIN ensures these agreements remain in the results.
+
+-- Business request:
+-- Report the total number of complaints by vehicle make
+-- and finance type, including vehicles with no complaints.
+SELECT veh.Make,
+       fin.FinanceType,
+COUNT (comp.ComplaintID) AS [Total Complaints]
+FROM Vehicles AS veh
+LEFT JOIN FinanceAgreements AS fin
+  ON veh.VehicleID = fin.VehicleID
+LEFT JOIN Complaints AS comp 
+  ON fin.AgreementID = comp.AgreementID
+GROUP BY veh.Make,
+       fin.FinanceType;
+-- Analysis:
+-- The query returned 11 vehicle make and finance type combinations,
+-- representing 20 complaints. 
+-- PCP accounts for 14 complaints and HP accounts for 6.
+-- LEFT JOINs preserve vehicles without complaints, while 
+-- COUNT (ComplaintID) ensures only actual complaints are counted.
+-- No zero-complaint groups appear in the current dataset.
+
+-- Business request:
+-- Report the number of complaints associated with each finance agreement,
+-- including the customer name, finance type and vehicle make.
+-- Include agreements with no recorded complaints.
+SELECT cust.CustomerName,
+       fin.FinanceType,
+       veh.Make,
+       fin.AgreementID,
+COUNT (comp.ComplaintID) AS [Total Complaints]
+FROM FinanceAgreements AS fin 
+LEFT JOIN Complaints AS comp
+  ON fin.AgreementID = comp.AgreementID
+INNER JOIN Vehicles AS veh 
+  ON fin.VehicleID = veh. VehicleID
+LEFT JOIN Customers AS cust
+  ON fin.CustomerID = cust.CustomerID
+GROUP BY cust.CustomerName,
+         cust.CustomerID,
+         fin.FinanceType,
+         veh.Make,
+         fin.AgreementID;
+--Analysis:
+-- The query returned 17 rows representing all 17 finance agreements.
+-- Agreements 16 and 17 have zero recorded complaints.
+-- Grouping by agreement ID ensures each agreeement is reported seporatley, 
+-- even when a customer has multiple agreements with the same finance type and vehicle make.
+-- The LEFT JOIN preserves agreements without complaints, while COUNT (comp.ComplaintID) excludes null values.
+
+-- Business request
+-- Report all finance agreements, including the customer name, finance type and vehicle make.
+-- Show the number of open and resolved complaints separately, 
+-- including agreements with no complaints.
+SELECT cust.CustomerName,
+       fin.FinanceType,
+       veh.Make,
+       fin.AgreementID,
+SUM(
+CASE 
+   WHEN comp.Status = 'Open' THEN 1
+   ELSE 0
+END) AS [Open],
+SUM(
+CASE 
+   WHEN comp.Status = 'Resolved' THEN 1
+   ELSE 0
+END) AS [Resolved],
+COUNT (comp.ComplaintID) AS [Total Complaints]
+FROM FinanceAgreements AS fin 
+LEFT JOIN Customers AS cust
+  ON fin.CustomerID = cust.CustomerID
+LEFT JOIN Complaints AS comp
+  ON fin.AgreementID = comp.AgreementID
+LEFT JOIN Vehicles AS veh
+  ON fin.VehicleID = veh.VehicleID 
+GROUP BY fin.AgreementID,cust.CustomerName,veh.Make,fin.FinanceType;
+-- Analysis:
+-- The query returned 17 finance agreements, with 20 complaints 
+-- recorded in total: 7 open and 13 resolved. 
+-- Agreements 16 and 17 have no recorded complaints.
+-- Conditional aggregation using SUM and CASE seporated open and resolved complaints.
+-- The LEFT JOIN preserves agreements without complaints, while grouping agreement ID 
+-- keeps each agreement separate.
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 
