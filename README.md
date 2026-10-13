@@ -2,8 +2,9 @@
 
 ## Project overview
 
-This is a personal SQL learning project built using Microsoft SQL Server and SQL Server Management Studio (SSMS).
-The project models a fictional motor finance complaints database. It will be developed over time to practice database design, SQL querying, data analysis and MI reporting.
+This project demonstrates the design and development of a fictional motor finance complaints database using Microsoft SQL Server and SQL Server Management Studio (SSMS). The project focuses on relational database design, SQL querying and data analysis, using realistic business scenarios to investigate complaint trends, finance agreements and operational performance. It is an ongoing portfolio project designed to develop practical SQL skills and demonstrate how data can support business decision-making and management information (MI) reporting. 
+
+
 
 ## Current progress
 
@@ -18,19 +19,25 @@ The project models a fictional motor finance complaints database. It will be dev
 * Used CASE expressions to categorise data into meaningful business bands
 * Analysed complaint volumes, outcomes, finance characteristics and SLA performance
 * Added business-style descriptions and analysis comments to queries
-* Added AnalysisQueries.sql containing SQL analysis and business-focused queries  
+* Added AnalysisQueries.sql containing SQL analysis and business-focused queries
 * Used Git and GitHub for version control
+* Used LEFT JOIN to preserve records without matching complaints
+* Used HAVING to filter grouped and aggregated results
+* Built three - and four-table JOIN queries across related tables
+* Used SUM with CASE to analyse open, resolved and total complaints
 
-## Next steps
 
-Continue developing intermediate SQL skills, including:
 
-* LEFT JOIN and other JOIN techniques
-* HAVING
-* DATE functions
-* Subqueries and CTEs
-* Window functions
+## Planned Enhancements
+
+Further development of the project will focus on expanding SQL analysis and reporting capabilities, including:
+
+* DATE functions to analyse complaint timelines and SLA performance
+* Subqueries and CTEs for more complex analysis
+* Window functions for ranking and comparing results
 * Further business-style analysis and MI reporting
-* Prepare the SQL dataset for Power BI
-* Build an interactive Power BI dashboard
+* Prepare the SQL dataset for Power BI integration
+* Developing an interactive Power BI dashboard to visualise key complaint trends and performance metrics
+
+
 
