@@ -1,3 +1,12 @@
+﻿-- Motor Finance Complaints Analysis
+-- 
+-- SQL queries exploring finance agreements, customer information, 
+-- complaint trends and resolution performance.
+-- 
+-- Database: MotorFinanceComplaints
+-- Last Reviewed: Completed 10 November 2026
+
+
 USE MotorFinanceComplaints
 GO
 
@@ -5,119 +14,143 @@ GO
 --FINANCE AGREEMENT ANALYSIS
 --====================================================================================
 
+-- BUSINESS REQUEST:
 -- Total finance amount across all agreements --
 SELECT SUM (FinanceAmount) AS TotalFinanceAmount
 FROM FinanceAgreements;
+-- ANALYSIS:
+-- The aggregate summarises the selected records and any stated filters; NULL values are excluded by the aggregate.
 
-
+-- BUSINESS REQUEST:
 -- Total finance amount by finance type
 SELECT FinanceType, 
        SUM (FinanceAmount) AS TotalFinanceAmount
 FROM FinanceAgreements
 GROUP BY FinanceType;
+-- ANALYSIS:
+-- Grouped results compare the categories specified above using the measure and units named in the output.
 
-
--- Toal finance amount by finance type for active agreements --
+-- BUSINESS REQUEST:
+-- Total finance amount by finance type for active agreements --
 SELECT FinanceType, 
        SUM (FinanceAmount) AS TotalFinanceAmount
 FROM FinanceAgreements
 WHERE AgreementStatus = 'Active'
 GROUP BY FinanceType
 ORDER BY TotalFinanceAmount DESC;
+-- ANALYSIS:
+-- Grouped results compare the categories specified above using the measure and units named in the output.
 
-
--- Toal finance amount for active PCP agreements --
+-- BUSINESS REQUEST:
+-- Total finance amount for active PCP agreements --
 SELECT SUM (FinanceAmount) AS [Total PCP Finance Amount]
 FROM FinanceAgreements
 WHERE AgreementStatus = 'Active'
 AND FinanceType = 'PCP';
+-- ANALYSIS:
+-- The aggregate summarises the selected records and any stated filters; NULL values are excluded by the aggregate.
 
-
+-- BUSINESS REQUEST:
 -- Total finance amount by agreement status --
 SELECT AgreementStatus, 
        SUM (FinanceAmount) AS TotalAmount
 FROM FinanceAgreements
 GROUP BY AgreementStatus
 ORDER BY TotalAmount DESC;
+-- ANALYSIS:
+-- Grouped results compare the categories specified above using the measure and units named in the output.
 
-
+-- BUSINESS REQUEST:
 -- Highest finance amount --
 SELECT MAX (FinanceAmount) AS MaxFinanceAmount
 FROM FinanceAgreements;
+-- ANALYSIS:
+-- The aggregate summarises the selected records and any stated filters; NULL values are excluded by the aggregate.
 
-
+-- BUSINESS REQUEST:
 -- Lowest finance amounts for active agreements --
 SELECT MIN (FinanceAmount) AS MinFinanceAmount
 FROM FinanceAgreements 
 WHERE AgreementStatus = 'Active';
+-- ANALYSIS:
+-- The aggregate summarises the selected records and any stated filters; NULL values are excluded by the aggregate.
 
-
--- Highest and lowest finance amount by finance type --
-SELECT FinanceType, 
-       MAX (FinanceAmount) AS MaxAmount, 
-       MIN (FinanceAmount) AS MinAmount
-FROM FinanceAgreements
-GROUP BY FinanceType;
-
-
+-- BUSINESS REQUEST:
 -- Average, highest and lowest finance amount by finance type --
 SELECT FinanceType, 
-       AVG (FinanceAmount) AS AverageAmount, 
+       AVG(CAST(FinanceAmount AS DECIMAL(19,4))) AS AverageAmount, 
        MAX (FinanceAmount) AS MaxAmount, 
        MIN (FinanceAmount) AS MinAmount
 FROM FinanceAgreements
 GROUP BY FinanceType;
+-- ANALYSIS:
+-- Grouped results compare the categories specified above using the measure and units named in the output.
 
-
+-- BUSINESS REQUEST:
 -- Finance Agreements between £15,000 and £25,000
 SELECT *
 FROM FinanceAgreements
 WHERE FinanceAmount BETWEEN 15000 AND 25000;
+-- ANALYSIS:
+-- The filters select the records described above; the result is a detail report rather than a grouped summary.
 
-
+-- BUSINESS REQUEST:
 -- Complaints received between June and Aug 2026, oldest first --
 SELECT *
 FROM Complaints
-WHERE ComplaintDate BETWEEN '2026-06-01' AND '2026-08-31'
+WHERE ComplaintDate >= '20260601' AND ComplaintDate < '20260901'
 ORDER BY ComplaintDate ASC;
+-- ANALYSIS:
+-- The filters select the records described above; the result is a detail report rather than a grouped summary.
 
-
+-- BUSINESS REQUEST:
 -- All resolved complaints received between June and Aug 2026, oldest first --
 SELECT *
 FROM Complaints
-WHERE ComplaintDate BETWEEN '2026-06-01' AND '2026-08-31'
+WHERE ComplaintDate >= '20260601' AND ComplaintDate < '20260901'
 AND Status = 'Resolved'
 ORDER BY ComplaintDate ASC;
+-- ANALYSIS:
+-- The filters select the records described above; the result is a detail report rather than a grouped summary.
 
 --=========================================================================================
 --COMPLAINT ANALYSIS --
 --=========================================================================================
 
+-- BUSINESS REQUEST:
 -- Total number of complaints --
 SELECT COUNT (*) AS [Total Complaints]
 FROM Complaints;
+-- ANALYSIS:
+-- The aggregate summarises the selected records and any stated filters; NULL values are excluded by the aggregate.
 
-
+-- BUSINESS REQUEST:
 -- Total number of open complaints --
 SELECT COUNT (*) AS [Total Open Complaints]
 FROM Complaints
 WHERE Status = 'Open';
+-- ANALYSIS:
+-- The aggregate summarises the selected records and any stated filters; NULL values are excluded by the aggregate.
 
-
+-- BUSINESS REQUEST:
 -- Number of complaints by complaint type --
-SELECT ComplaintType, COUNT (ComplaintType) AS [Total Complaints]
+SELECT ComplaintType, COUNT(*) AS [Total Complaints]
 FROM Complaints
 GROUP BY ComplaintType
 ORDER BY [Total Complaints] DESC;
+-- ANALYSIS:
+-- Grouped results compare the categories specified above using the measure and units named in the output.
 
-
+-- BUSINESS REQUEST:
 -- Resolved Complaints by outcome --
-SELECT Outcome, COUNT (Outcome) AS [Total Complaints]
+SELECT Outcome, COUNT(*) AS [Total Complaints]
 FROM Complaints
 WHERE Status = 'Resolved'
 GROUP BY Outcome;
+-- ANALYSIS:
+-- Grouped results compare the categories specified above using the measure and units named in the output.
 
-
+-- BUSINESS REQUEST:
 -- Number of upheld complaints by complaint type, highest first --
 
 SELECT ComplaintType, COUNT (*) AS TotalUpheld
@@ -125,30 +158,30 @@ FROM Complaints
 WHERE Outcome = 'Upheld'
 GROUP BY ComplaintType
 ORDER BY TotalUpheld DESC;
+-- ANALYSIS:
+-- Grouped results compare the categories specified above using the measure and units named in the output.
 
-
+-- BUSINESS REQUEST:
 -- Resolved complaints for selected complaint types --
 SELECT *
 FROM Complaints
 WHERE Status = 'Resolved' AND ComplaintType IN ('Affordability','Customer Service','Commission Disclosure')
+-- ANALYSIS:
+-- The filters select the records described above; the result is a detail report rather than a grouped summary.
 
-
+-- BUSINESS REQUEST:
 -- Open or Upheld Complaints --
 SELECT * 
 FROM Complaints
 WHERE Status = 'Open' OR Outcome = 'Upheld';
+-- ANALYSIS:
+-- The filters select the records described above; the result is a detail report rather than a grouped summary.
 
 --==============================================================================================================
 --JOIN ANALYSIS
 --==============================================================================================================
 
--- Complaints with customers --
-SELECT *
-FROM Complaints
-INNER JOIN Customers
-     ON Complaints.CustomerID = Customers.CustomerID;
-
-
+-- BUSINESS REQUEST:
 -- Complaints with customer names --
 SELECT comp.ComplaintID,
        comp.ComplaintType,
@@ -157,8 +190,10 @@ SELECT comp.ComplaintID,
 FROM Complaints AS comp
 INNER JOIN Customers AS cust
      ON comp.CustomerID = cust.CustomerID;
+-- ANALYSIS:
+-- The joins return the matching records described above; a customer or agreement may appear for multiple complaints.
 
-
+-- BUSINESS REQUEST:
 -- Finance Agreements with Customer Names --
 SELECT fin.AgreementID,   
        fin.FinanceType,
@@ -167,8 +202,10 @@ SELECT fin.AgreementID,
 FROM FinanceAgreements AS fin
 INNER JOIN Customers AS cust
      ON fin.CustomerID = cust.CustomerID;
+-- ANALYSIS:
+-- The joins return the matching records described above; a customer or agreement may appear for multiple complaints.
 
-
+-- BUSINESS REQUEST:
 -- Complaint with associated finance agreements details --
 SELECT fin.AgreementID,
        fin.FinanceType,
@@ -182,8 +219,10 @@ SELECT fin.AgreementID,
 FROM FinanceAgreements AS fin
 INNER JOIN Complaints AS comp
      ON fin.AgreementID = comp.AgreementID;
+-- ANALYSIS:
+-- The joins return the matching records described above; a customer or agreement may appear for multiple complaints.
 
-
+-- BUSINESS REQUEST:
 -- Complaints with customer and finance agreement details 
 SELECT fin.FinanceType,
        fin.FinanceAmount, 
@@ -194,8 +233,10 @@ INNER JOIN FinanceAgreements AS fin
      ON cust.CustomerID = fin.CustomerID
 INNER JOIN Complaints AS comp
      ON fin.AgreementID = comp.AgreementID;
+-- ANALYSIS:
+-- The joins return the matching records described above; a customer or agreement may appear for multiple complaints.
 
-
+-- BUSINESS REQUEST:
 -- Open complaints with customer and finance details -- 
 SELECT fin.FinanceType,
        fin.FinanceAmount, 
@@ -211,8 +252,10 @@ INNER JOIN FinanceAgreements AS fin
 INNER JOIN Customers AS Cust
      ON fin.CustomerID = cust.CustomerID
 WHERE comp.Status = 'Open';
+-- ANALYSIS:
+-- The joins return the matching records described above; a customer or agreement may appear for multiple complaints.
 
-
+-- BUSINESS REQUEST:
 -- Complaints with customer, vehicle and finance agreement details --
 SELECT cust.CustomerName,
        veh.RegistrationPlate,
@@ -228,9 +271,11 @@ INNER JOIN Complaints AS comp
      ON fin.AgreementID = comp.AgreementID
 INNER JOIN Vehicles AS veh
      ON fin.VehicleID = veh.VehicleID;
+-- ANALYSIS:
+-- The joins return the matching records described above; a customer or agreement may appear for multiple complaints.
 
-
--- Open PCP omplaints with customer, vehicle and finance agreement details, ordered by earliest SLA due date --
+-- BUSINESS REQUEST:
+-- Open PCP complaints with customer, vehicle and finance agreement details, ordered by earliest SLA due date --
 SELECT cust.CustomerName,
        veh.RegistrationPlate,
        fin.FinanceType,
@@ -247,23 +292,23 @@ INNER JOIN Vehicles AS veh
      ON fin.VehicleID = veh.VehicleID
 WHERE comp.Status = 'Open' AND fin.FinanceType = 'PCP'
 ORDER BY comp.SLADueDate ASC;
+-- ANALYSIS:
+-- The joins return the matching records described above; a customer or agreement may appear for multiple complaints.
 
-
+-- BUSINESS REQUEST:
 -- Number of open complaints by finance type, highest first --
 SELECT fin.FinanceType, 
        COUNT (*) AS [Total Open Complaints]
-FROM Customers AS cust
-INNER JOIN FinanceAgreements AS fin
-     ON cust.CustomerID = fin.CustomerID
+FROM FinanceAgreements AS fin
 INNER JOIN Complaints AS comp
-     ON fin.AgreementID = comp.AgreementID
-INNER JOIN Vehicles AS veh
-     ON fin.VehicleID = veh.VehicleID
+      ON fin.AgreementID = comp.AgreementID
 WHERE comp.Status = 'Open' 
 GROUP BY fin.FinanceType
 ORDER BY [Total Open Complaints] DESC;
+-- ANALYSIS:
+-- Grouped results compare the categories specified above using the measure and units named in the output.
 
-
+-- BUSINESS REQUEST:
 -- Resolved complaints with customer and finance details, newest first --
 SELECT cust.CustomerName,
        fin.FinanceType,
@@ -277,17 +322,10 @@ INNER JOIN Complaints AS comp
      ON fin.AgreementID = comp.AgreementID
 WHERE Status = 'Resolved'
 ORDER BY ComplaintDate DESC;
+-- ANALYSIS:
+-- The joins return the matching records described above; a customer or agreement may appear for multiple complaints.
 
-
--- Number of upheld complaints by complaint type, highest first --
-SELECT ComplaintType, 
-       COUNT (*) AS TotalUpheld
-FROM Complaints 
-WHERE Outcome = 'Upheld'
-GROUP BY ComplaintType
-ORDER BY TotalUpheld DESC;
-
-
+-- BUSINESS REQUEST:
 -- Number of upheld complaints by finance type, highest first -- 
 SELECT fin.FinanceType, 
        COUNT (*) AS [Total Upheld]
@@ -297,28 +335,38 @@ INNER JOIN Complaints AS comp
 WHERE comp.Outcome = 'Upheld'
 GROUP BY fin.FinanceType
 ORDER BY [Total Upheld] DESC;
+-- ANALYSIS:
+-- Grouped results compare the categories specified above using the measure and units named in the output.
 
-
--- Average finance amount for agreements with upheld complaints, highest first -- 
-SELECT fin.FinanceType, 
-       AVG (fin.FinanceAmount) AS [Average Finance Amount]
-FROM FinanceAgreements AS fin 
-INNER JOIN Complaints AS comp
-      ON fin.AgreementID = comp.AgreementID
-WHERE comp.Outcome = 'Upheld'
-GROUP BY fin.FinanceType 
+-- BUSINESS REQUEST:
+-- Compare average agreement value by finance type for agreements with at least
+-- one upheld complaint. Count each qualifying agreement once.
+SELECT fin.FinanceType,
+       CAST(AVG(CAST(fin.FinanceAmount AS DECIMAL(19,4))) AS DECIMAL(19,2))
+           AS [Average Finance Amount]
+FROM FinanceAgreements AS fin
+WHERE EXISTS (
+    SELECT 1 FROM Complaints AS comp
+    WHERE comp.AgreementID = fin.AgreementID
+      AND comp.Outcome = 'Upheld'
+)
+GROUP BY fin.FinanceType
 ORDER BY [Average Finance Amount] DESC;
-
+-- ANALYSIS:
+-- EXISTS avoids weighting an agreement repeatedly when it has multiple upheld complaints.
+-- Result values must be recorded after execution against the project database.
 
 --===============================================================================================================
 -- CASE ANALYSIS
 --===============================================================================================================
 
--- Catagorise finance agreements into low, medium and high value bands --
+-- BUSINESS REQUEST:
+-- Categorise finance agreements into low, medium and high value bands --
 SELECT AgreementID, 
        FinanceType, 
        FinanceAmount,
       CASE 
+        WHEN FinanceAmount IS NULL THEN 'Unknown'
         WHEN FinanceAmount < 15000 
           THEN 'Low Value'
         WHEN FinanceAmount BETWEEN 15000 AND 25000 
@@ -326,13 +374,16 @@ SELECT AgreementID,
         ELSE 'High Value'
       END AS [Value Band]
 FROM FinanceAgreements;
+-- ANALYSIS:
+-- The filters select the records described above; the result is a detail report rather than a grouped summary.
 
-
--- Catagorise finance agreements into lower, standard and high value band --
+-- BUSINESS REQUEST:
+-- Categorise finance agreements into lower, standard and high value band --
 SELECT AgreementID,
        FinanceType,
        FinanceAmount,
        CASE 
+         WHEN FinanceAmount IS NULL THEN 'Unknown'
          WHEN FinanceAmount < 20000 
            THEN 'Lower Value'
          WHEN FinanceAmount BETWEEN 20000 AND 30000 
@@ -340,11 +391,14 @@ SELECT AgreementID,
          ELSE 'Higher Value'
        END AS [Band Value]
 FROM FinanceAgreements;
+-- ANALYSIS:
+-- The filters select the records described above; the result is a detail report rather than a grouped summary.
 
-
+-- BUSINESS REQUEST:
 -- Upheld complaints by finance type and APR Band, highest first --
 SELECT fin.FinanceType,
        CASE 
+         WHEN APR IS NULL THEN 'Unknown'
          WHEN APR < 6 
            THEN 'Low APR'
          WHEN APR BETWEEN 6 AND 9 
@@ -358,6 +412,7 @@ INNER JOIN FinanceAgreements AS [fin]
 WHERE Outcome = 'Upheld'
 GROUP BY fin.FinanceType,
 CASE 
+         WHEN APR IS NULL THEN 'Unknown'
          WHEN APR < 6 
            THEN 'Low APR'
          WHEN APR BETWEEN 6 AND 9 
@@ -365,12 +420,15 @@ CASE
          ELSE 'High APR'
        END
 ORDER BY [Total Upheld] DESC;
+-- ANALYSIS:
+-- Grouped results compare the categories specified above using the measure and units named in the output.
 
-
+-- BUSINESS REQUEST:
 -- Groups upheld complaints by finance type and finance amount band to identify which agreement value ranges have the highest number 
 -- of upheld complaints.
 SELECT fin.FinanceType,
        CASE 
+         WHEN fin.FinanceAmount IS NULL THEN 'Unknown'
          WHEN fin.FinanceAmount < 20000 
            THEN 'Lower Value'
          WHEN fin.FinanceAmount BETWEEN 20000 AND 30000 
@@ -384,6 +442,7 @@ INNER JOIN Complaints AS comp
 WHERE Outcome = 'Upheld'
 GROUP BY fin.FinanceType,
          CASE 
+         WHEN fin.FinanceAmount IS NULL THEN 'Unknown'
          WHEN fin.FinanceAmount < 20000 
            THEN 'Lower Value'
          WHEN fin.FinanceAmount BETWEEN 20000 AND 30000 
@@ -391,11 +450,14 @@ GROUP BY fin.FinanceType,
          ELSE 'Higher Value'
        END
 ORDER BY [Total Upheld] DESC;
+-- ANALYSIS:
+-- Grouped results compare the categories specified above using the measure and units named in the output.
 
-
+-- BUSINESS REQUEST:
 -- Groups resolved complaints by finance type and term length to show how many resolved complaints fall into each term band.
 SELECT fin.FinanceType,
        CASE  
+         WHEN fin.TermMonths IS NULL THEN 'Unknown'
          WHEN fin.TermMonths < 36 
            THEN 'Short Term'
          WHEN fin.TermMonths BETWEEN 36 AND 48 
@@ -409,6 +471,7 @@ INNER JOIN Complaints AS comp
 WHERE Status = 'Resolved'
 GROUP BY FinanceType,
          CASE  
+           WHEN fin.TermMonths IS NULL THEN 'Unknown'
            WHEN fin.TermMonths < 36 
              THEN 'Short Term'
            WHEN fin.TermMonths BETWEEN 36 AND 48 
@@ -416,11 +479,14 @@ GROUP BY FinanceType,
            ELSE 'Long Term'
          END
 ORDER BY [Total Resolved] DESC;
+-- ANALYSIS:
+-- Grouped results compare the categories specified above using the measure and units named in the output.
 
-
+-- BUSINESS REQUEST:
 -- Resolved complaints by complaint type and APR band, highest first --
 SELECT comp.ComplaintType,
        CASE 
+         WHEN fin.APR IS NULL THEN 'Unknown'
          WHEN fin.APR < 6 
            THEN 'Low APR'
          WHEN fin.APR BETWEEN 6 AND 9 
@@ -434,6 +500,7 @@ INNER JOIN FinanceAgreements AS fin
 WHERE comp.Status = 'Resolved'
 GROUP BY comp.ComplaintType,
          CASE 
+           WHEN APR IS NULL THEN 'Unknown'
            WHEN APR < 6 
              THEN 'Low APR'
            WHEN APR BETWEEN 6 AND 9 
@@ -444,10 +511,11 @@ ORDER BY [Total Resolved] DESC;
 -- Analysis: Early settlement complaints at Low APR had the highest number of resolved complaints (3).
 -- Commission Disclosure at medium APR AND Affordability at High APR with (2) each.
 
-
+-- BUSINESS REQUEST:
 -- Resolved complaints by finance type SLA performance, highest first --
 SELECT FinanceType,
        CASE 
+         WHEN ResolutionDate IS NULL OR SLADueDate IS NULL THEN 'Unknown'
          WHEN ResolutionDate <= SLADueDate 
            THEN 'On Time'
          ELSE 'Late'
@@ -459,6 +527,7 @@ INNER JOIN FinanceAgreements AS fin
 WHERE Status = 'Resolved'
 GROUP BY fin.FinanceType,
          CASE 
+           WHEN ResolutionDate IS NULL OR SLADueDate IS NULL THEN 'Unknown'
            WHEN ResolutionDate <= SLADueDate 
              THEN 'On Time'
            ELSE 'Late'
@@ -467,15 +536,16 @@ ORDER BY [Total Resolved] DESC;
 -- Analysis: PCP had the highest of resolved complaints completed on time (5) followed by HP (4). Late resolutions were lower
 -- with (3) PCP complaints and (1) HP complaint.
 
-
--- Complaints by finance typeand APR Band, highest volume first --
+-- BUSINESS REQUEST:
+-- Complaints by finance type and APR Band, highest volume first --
 SELECT fin.FinanceType, 
        COUNT (*) AS [Total Complaints],
        CASE 
+         WHEN APR IS NULL THEN 'Unknown'
          WHEN APR < 6 
            THEN 'Low APR'
          WHEN APR BETWEEN 6 AND 9 
-           THEN 'Standard APR'
+           THEN 'Medium APR'
          ELSE 'High APR'
        END AS [APR Banding]
 FROM FinanceAgreements AS fin 
@@ -483,21 +553,23 @@ INNER JOIN Complaints AS comp
       ON fin.AgreementID = comp.AgreementID
 GROUP BY fin.FinanceType,
         CASE 
+          WHEN APR IS NULL THEN 'Unknown'
           WHEN APR < 6 
             THEN 'Low APR'
           WHEN APR BETWEEN 6 AND 9 
-            THEN 'Standard APR'
+            THEN 'Medium APR'
           ELSE 'High APR'
         END
 ORDER BY [Total Complaints] DESC;
---Analysis: Standard APR agreements had the highest complaint volume (8), 
+--Analysis: Medium APR agreements had the highest complaint volume (8), 
 -- followed by Low APR (7) and high APR (5).
--- Standard APR complaints consisted of (7) PCP and (1) HP complaint.
+-- Medium APR complaints consisted of (7) PCP and (1) HP complaint.
 
-
+-- BUSINESS REQUEST:
 -- Complaints by agreement term band, highest volume first --
 SELECT 
     CASE 
+      WHEN TermMonths IS NULL THEN 'Unknown'
       WHEN TermMonths < 36 
         THEN 'Short Term'
       WHEN TermMonths BETWEEN 36 AND 48 
@@ -510,6 +582,7 @@ INNER JOIN Complaints AS comp
     ON fin.AgreementID = comp.AgreementID
 GROUP BY 
     CASE 
+      WHEN TermMonths IS NULL THEN 'Unknown'
       WHEN TermMonths < 36 
         THEN 'Short Term'
       WHEN TermMonths BETWEEN 36 AND 48 
@@ -520,10 +593,11 @@ ORDER BY [Total Complaints] DESC;
 -- Analysis: Standard Term agreements had the highest complaint volume (11)
 -- followed by Long Term agreements (7) and Short Term agreements (2).
 
-
+-- BUSINESS REQUEST:
 -- Resolved complaints by finance type and customer age band, highest first -- 
 SELECT fin.FinanceType,
        CASE 
+         WHEN Age IS NULL THEN 'Unknown'
          WHEN Age < 30 
            THEN 'Under 30'
          WHEN Age BETWEEN 30 AND 49 
@@ -539,6 +613,7 @@ INNER JOIN Complaints AS comp
 WHERE Status = 'Resolved'
 GROUP BY fin.FinanceType,
          CASE 
+           WHEN Age IS NULL THEN 'Unknown'
            WHEN Age < 30 
              THEN 'Under 30'
            WHEN Age BETWEEN 30 AND 49 
@@ -546,37 +621,43 @@ GROUP BY fin.FinanceType,
            ELSE '50+'
          END
 ORDER BY [Total Resolved Complaints] DESC;
--- Analysis: The 39-40 age band had the highest volume of resolved complaints (9 Total), 
+-- Analysis: The 30-49 age band had the highest volume of resolved complaints (9 Total), 
 -- with PCP (5) marginally higher than HP (4).
 -- Under 30 had 3 resolved complaints (2 PCP and 1 HP).
 -- The age 50+ age band had the lowest volume, with 1 resolved PCP complaint.
 
-
+-- BUSINESS REQUEST:
 -- Resolved complaint SLA performance by complaint month, in chronological order --
 SELECT
     CASE 
+      WHEN ResolutionDate IS NULL OR SLADueDate IS NULL THEN 'Unknown'
       WHEN ResolutionDate <= SLADueDate 
         THEN 'On Time'
       ELSE 'Late'
     END AS [SLA Performance],
-    DATENAME (MONTH,ComplaintDate) AS [Complaint Month],
+    DATEFROMPARTS(YEAR(ComplaintDate), MONTH(ComplaintDate), 1) AS [Complaint Month],
     COUNT (*) AS [Total Resolved Complaints]
 FROM Complaints AS comp
 WHERE Status = 'Resolved'
-GROUP BY DATENAME (MONTH, ComplaintDate), MONTH(ComplaintDate),
+GROUP BY DATEFROMPARTS(YEAR(ComplaintDate), MONTH(ComplaintDate), 1),
     CASE 
+      WHEN ResolutionDate IS NULL OR SLADueDate IS NULL THEN 'Unknown'
       WHEN ResolutionDate <= SLADueDate 
         THEN 'On Time'
       ELSE 'Late'
     END
-ORDER BY MONTH(ComplaintDate);
+ORDER BY [Complaint Month];
 -- Analysis: 9 of the 13 resolved complaints were completed on time, with 4 completed late.
--- April and June had no late resolved complaints, while late complaints appeared in March (1), June (1) and July (2).
--- July had the highest resolved complaint volume (5), with 3 completed on timeand 2 late.
+-- Previous month-level findings were contradictory and have been removed.
+-- Rerun this query to document the on-time and late counts for each year-month.
+-- Months represent when complaints were received, not when they were resolved.
+-- July had the highest resolved complaint volume (5), with 3 completed on time and 2 late.
 
+-- BUSINESS REQUEST:
 -- Complaint volume by finance agreement value band, highest first --
 SELECT 
     CASE 
+      WHEN fin.FinanceAmount IS NULL THEN 'Unknown'
       WHEN fin.FinanceAmount < 15000 
         THEN 'Low Value'
       WHEN fin.FinanceAmount BETWEEN 15000 AND 25000 
@@ -589,6 +670,7 @@ JOIN Complaints AS comp
   ON fin.AgreementID = comp.AgreementID
 GROUP BY 
     CASE 
+      WHEN fin.FinanceAmount IS NULL THEN 'Unknown'
       WHEN fin.FinanceAmount < 15000 
         THEN 'Low Value'
       WHEN fin.FinanceAmount BETWEEN 15000 AND 25000 
@@ -599,7 +681,6 @@ ORDER BY [Total Complaints] DESC;
 -- Analysis: medium value agreements had the highest complaint volume (9),
 -- followed closely by high value agreements (8).
 -- Low value agreements had the lowest complaint volume (3)
-
 
 -- Business request: 
 -- Show all finance agreements and any associated complaints,
@@ -614,19 +695,6 @@ LEFT JOIN Complaints AS comp
 -- The LEFT JOIN returned all finance agreements, including those without a matching complaint.
 -- Agreements 16 and 17 have no associated complaint and therefore return NULL for ComplaintID.
 -- Agreements with multiple complaints appear more than once, with one row returned for each associated complaint.
-
--- Business request:
--- Show all finance agreements that have no associated complaint.
-SELECT fin.AgreementID,
-       fin.FinanceType,
-       comp.ComplaintID
-FROM FinanceAgreements AS fin 
-LEFT JOIN Complaints AS comp 
-  ON fin.AgreementID = comp.AgreementID
-WHERE ComplaintID IS NULL;
--- Analysis:
--- Two finance agreements have no associated complaint:
--- One PCP agreement and one HP agreement.
 
 -- Business Request:
 -- Show all customers and their registered vehicle,
@@ -656,7 +724,7 @@ GROUP BY FinanceType;
 
 
 -- Business request:
--- Identify all finance agreements that never recieved a complaint,
+-- Identify all finance agreements that never received a complaint,
 -- including the finance type, amount and current agreement status.
 SELECT fin.AgreementID,
        fin.FinanceType,
@@ -670,37 +738,6 @@ WHERE comp.ComplaintID IS NULL;
 -- Two finance agreements have no associated complaint.
 -- Agreement 16 is an active PCP agreement for £18,000.
 -- Agreement 17 is a settled HP agreement for £12,500.
-
--- Business request:
--- Compare the average value of finance agreements that have received 
--- complaints with those that have not recieved a complaint.
-SELECT 
-    CASE 
-      WHEN comp.ComplaintID IS NOT NULL 
-       THEN 'Has Complaint'
-      ELSE 'No Complaint'
-    END AS [Complaint Status],
-    AVG (fin.FinanceAmount) AS [Average Finance Amount]
-FROM FinanceAgreements AS fin
-LEFT JOIN Complaints AS comp 
-    ON fin.AgreementID = comp.AgreementID
-GROUP BY 
-    CASE 
-      WHEN comp.ComplaintID IS NOT NULL 
-       THEN 'Has Complaint'
-      ELSE 'No Complaint'
-    END
-ORDER BY [Average Finance Amount] DESC;
--- Analysis:
---Agreements with no complaint had an average finance amount of £15,250.
--- The initial average for agreements with complaints was £23,190.
--- However, agreements with multiple complaints appear more tha once 
--- following the JOIN, which can affect the calculated average.
--- Further analysis is required to calculate the average using each 
--- finance agreement only once.
--- UPDATE: The average calculation has now been corrected.
--- See Data Quality & Query Optimisation for the revised
--- query using a CTE and CASE WHEN EXISTS.
 
 --======================================================================================================================
 -- HAVING AND JOINS 
@@ -737,14 +774,14 @@ HAVING COUNT (*) > 2;
 -- Review active finance agreements by finance type and show the average amount,
 -- including only finance types where the average value is greater than £20,000.
 SELECT FinanceType,
-       AVG (FinanceAmount) AS [Average Finance Amount]
+       AVG(CAST(FinanceAmount AS DECIMAL(19,4))) AS [Average Finance Amount]
 FROM FinanceAgreements
 WHERE AgreementStatus = 'Active'
 GROUP BY FinanceType
-HAVING AVG (FinanceAmount) > 20000;
+HAVING AVG(CAST(FinanceAmount AS DECIMAL(19,4))) > 20000;
 -- Analysis:
 -- PCP was the only finance type with an average finance amount greater than £20,000,
--- with an average value of approximatley £23,043.
+-- with an average value of approximately £23,043.
 -- HP had an average finance amount below £20,000 and therefore excluded from the results.
 
 
@@ -796,7 +833,7 @@ HAVING COUNT (*) >3;
 -- HP has 5 complaints.
 
 
--- Business reqiest:
+-- Business request:
 -- Review all finance agreements by finance type and show the number of 
 -- complaints associated with each type, including agreements with no complaint.
 -- Only include finance types with more than 5 complaints.
@@ -820,6 +857,7 @@ HAVING COUNT (comp.ComplaintID) > 5;
 -- Only include value bands with more than 5 complaints.
 SELECT
     CASE 
+      WHEN fin.FinanceAmount IS NULL THEN 'Unknown'
       WHEN fin.FinanceAmount < 20000 
        THEN 'Lower Value'
       ELSE 'Higher Value'
@@ -830,6 +868,7 @@ LEFT JOIN Complaints AS comp
      ON fin.AgreementID = comp.AgreementID 
 GROUP BY 
    CASE 
+     WHEN fin.FinanceAmount IS NULL THEN 'Unknown'
      WHEN fin.FinanceAmount < 20000 THEN 'Lower Value'
     ELSE 'Higher Value'
    END
@@ -839,28 +878,6 @@ HAVING COUNT (comp.ComplaintID) > 5;
 -- Higher Value Band had the highest complaint volume, with 14 complaints.
 -- Lower Value Band had 6 complaints.
 
-
--- Business request:
--- Review resolved complaints by finance type. Show the average finance amount 
--- associated with resolved complaints for each finance type.
--- Include only finance types where the average is greater than £20,000.
-SELECT fin.FinanceType,
-        AVG (fin.FinanceAmount) AS [Average Finance Amount]
-FROM FinanceAgreements AS fin 
-INNER JOIN Complaints AS comp
-    ON fin.AgreementID = comp.AgreementID
-WHERE comp.Status = 'Resolved'
-GROUP BY fin.FinanceType 
-HAVING AVG (fin.FinanceAmount) > 20000;
--- Analysis:
--- PCP was the only finance type with an average finance amount greater than £20,000.
--- PCP had an average finance amount of approximatley £25,163.
--- HP had an average value below the £20,000 threshold and therefore was excluded from the results.
--- Further analysis is required to calculate the average without finance agreements being duplicated by 
--- multiple resolved complaints.
--- UPDATE: This issue has now been investigated and corrected.
--- See the Data Quality & Query Optimisation section
--- for the corrected query using a CTE and EXISTS.
 
 --========================================================================================================
 -- MULTI-TABLE JOINS
@@ -880,27 +897,6 @@ INNER JOIN FinanceAgreements AS fin
 -- Analysis:
 -- The query returned all 20 complaints with the associated 
 -- customer name and finance type.
-
--- Business request:
--- Review resolved complaints and show the customer's name, complaint type,
--- and the make and model of the vehicle associated with the finance agreement.
-SELECT cust.CustomerName,
-       comp.ComplaintType,
-       veh.Model,
-       veh.Make
-FROM Complaints AS comp
-INNER JOIN FinanceAgreements AS fin
-    ON comp.AgreementID = fin.AgreementID
-INNER JOIN Vehicles AS veh
-    ON fin.VehicleID = veh.VehicleID
-INNER JOIN Customers AS cust
-    ON comp.CustomerID = cust.CustomerID
-WHERE comp.Status = 'Resolved';
--- Analysis:
--- The query returned all 13 resolved complaints with the associated
--- customer's name, complaint type and the make and model of the vehicle
--- linked to the relevant finance agreement.
-
 
 -- Business Request:
 -- Identify all resolved motor finance complaints, Showing the complaint ID, 
@@ -934,14 +930,14 @@ SELECT cust.CustomerName,
        veh.Model,
        comp.ComplaintID
 FROM FinanceAgreements AS fin
-INNER JOIN Customers AS cust
+LEFT JOIN Customers AS cust
     ON fin.CustomerID = cust.CustomerID
 LEFT JOIN Complaints AS comp
     ON fin.AgreementID = comp.AgreementID
-INNER JOIN Vehicles AS veh 
+LEFT JOIN Vehicles AS veh
   ON fin.VehicleID = veh.VehicleID;
 -- Analysis:
--- The query returned 22 rows across 17 finanace agreements.
+-- The query returned 22 rows across 17 finance agreements.
 -- Some agreements appear multiple times because they have 
 -- more than one associated complaint.
 -- Agreements 16 and 17 have NULL complaint ID values,
@@ -968,34 +964,6 @@ GROUP BY veh.Make,
 -- LEFT JOINs preserve vehicles without complaints, while 
 -- COUNT (ComplaintID) ensures only actual complaints are counted.
 -- No zero-complaint groups appear in the current dataset.
-
--- Business request:
--- Report the number of complaints associated with each finance agreement,
--- including the customer name, finance type and vehicle make.
--- Include agreements with no recorded complaints.
-SELECT cust.CustomerName,
-       fin.FinanceType,
-       veh.Make,
-       fin.AgreementID,
-       COUNT (comp.ComplaintID) AS [Total Complaints]
-FROM FinanceAgreements AS fin 
-LEFT JOIN Complaints AS comp
-     ON fin.AgreementID = comp.AgreementID
-INNER JOIN Vehicles AS veh 
-     ON fin.VehicleID = veh. VehicleID
-LEFT JOIN Customers AS cust
-     ON fin.CustomerID = cust.CustomerID
-GROUP BY cust.CustomerName,
-         cust.CustomerID,
-         fin.FinanceType,
-         veh.Make,
-         fin.AgreementID;
---Analysis:
--- The query returned 17 rows representing all 17 finance agreements.
--- Agreements 16 and 17 have zero recorded complaints.
--- Grouping by agreement ID ensures each agreeement is reported seporatley, 
--- even when a customer has multiple agreements with the same finance type and vehicle make.
--- The LEFT JOIN preserves agreements without complaints, while COUNT (comp.ComplaintID) excludes null values.
 
 -- Business request
 -- Report all finance agreements, including the customer name, finance type and vehicle make.
@@ -1030,7 +998,7 @@ GROUP BY fin.AgreementID,cust.CustomerName,veh.Make,fin.FinanceType;
 -- The query returned 17 finance agreements, with 20 complaints 
 -- recorded in total: 7 open and 13 resolved. 
 -- Agreements 16 and 17 have no recorded complaints.
--- Conditional aggregation using SUM and CASE seporated open and resolved complaints.
+-- Conditional aggregation using SUM and CASE separated open and resolved complaints.
 -- The LEFT JOIN preserves agreements without complaints, while grouping agreement ID 
 -- keeps each agreement separate.
 
@@ -1048,7 +1016,7 @@ WHERE Status = 'Resolved'
 ORDER BY [Total Days to Resolution] DESC;
 -- Analysis:
 -- The query returned 13 resolved complaints.
--- Resolution times renged from 33 to 63 days.
+-- Resolution times ranged from 33 to 63 days.
 -- Open complaints were excluded using the WHERE filter.
 
 
@@ -1063,9 +1031,9 @@ WHERE Status = 'Resolved';
 -- The query calculates the average resolution time across
 -- resolved complaints only, excluding open complaints.
 -- DATEDIFF calculates the resolution time in days.
--- CAST converts the result to a decimal, allowing AVG
--- to return a more precise average with two decimal places.
--- The average resoltion time across 13 resolved complaints was approx 51.15 days.
+-- Casting inside AVG preserves fractional days; format the displayed
+-- result to two decimal places in the reporting tool.
+-- The average resolution time across 13 resolved complaints was approx 51.15 days.
 
 
 -- Business request:
@@ -1086,12 +1054,12 @@ ORDER BY [Average Resolution Days] DESC;
 -- Early settlement had the longest average resolution time at approx 57.67 days,
 -- based on 3 resolved complaints.
 -- Customer service had the shortest at 41 days.
--- Catagories with only 1 complaint should be interpreted cautiously.
+-- Categories with only 1 complaint should be interpreted cautiously.
 -- Only resolved complaints were included in the analysis.
 
 
 -- Business request:
--- Identify complaint types with atleast 3 resolved complaints.
+-- Identify complaint types with at least 3 resolved complaints.
 -- Compare their average resolution times, ranking the longest resolution times first.
 SELECT ComplaintType,
        AVG (CAST (DATEDIFF (DAY, ComplaintDate, ResolutionDate) AS DECIMAL (10,2))) AS [Average Resolution Days],
@@ -1105,7 +1073,7 @@ ORDER BY [Average Resolution Days] DESC;
 -- Three complaint types met the minimum threshold of 3 resolved complaints.
 -- Early settlement had the longest average resolution time at approx 57.67 days.
 -- HAVING excluded complaint types with fewer than 3 resolved complaints.
--- This allows the comparison of catagories with a minimum complaint volume,
+-- This allows the comparison of categories with a minimum complaint volume,
 -- although sizes remain small.
 
 
@@ -1116,7 +1084,7 @@ SELECT TOP 5 ComplaintID,
            DATEDIFF (DAY, ComplaintDate, GETDATE ()) AS [Days Awaiting Resolution]
 FROM Complaints
 WHERE Status = 'Open'
-ORDER BY [Days Awaiting Resolution] DESC;
+ORDER BY [Days Awaiting Resolution] DESC, ComplaintID ASC;
 -- Analysis:
 -- The query returned 5 longest outstanding open complaints.
 -- Complaint 4 had the longest waiting time at 79 days.
@@ -1140,68 +1108,41 @@ ORDER BY [Days Overdue] DESC;
 -- Complaint 10 has been overdue the shortest time at 7 days.
 
 
--- Business request:
--- Identify how many complaints have been resolved on or before their SLA deadline
--- and how many were resolved after their SLA deadline.
-SELECT 
-  COUNT (ComplaintID) AS [Total Complaints],
-  CASE 
-   WHEN ResolutionDate <= SLADueDate 
-    THEN 'On Time'
-   ELSE 'Late'
-  END AS [SLA Deadline]
-FROM Complaints
-WHERE Status = 'Resolved'
-GROUP BY 
-  CASE 
-   WHEN ResolutionDate <= SLADueDate 
-    THEN 'On Time'
-   ELSE 'Late'
-  END
-ORDER BY [Total Complaints] DESC;
--- Analysis:
--- The query identified 13 resolved complaints.
--- 9 complaints were resolved on or before their SLA deadline.
--- 4 complaints were resolved after thier SLA deadline.
--- CASE catagorised complaints as on time or late by comparing
--- Resolution date and SLA due date.
--- COUNT and GROUP BY Calculated the total in each catagory 
-
-
 --===================================================================================================
 -- WINDOW FUNCTIONS
 --===================================================================================================
 
--- Business request:
--- Report the number and percentage of resolved complaints
--- completed on time verses late, rounded to two deciamal places 
--- and ordered by highest complaint count first.
-SELECT 
-  CASE 
-    WHEN ResolutionDate <= SLADueDate 
-     THEN 'On Time' 
-    ELSE 'Late'
-  END AS [SLA Deadline],
-    COUNT (ComplaintID) AS [Total Complaints], 
-    CAST
-      (COUNT (ComplaintID)* 100.0
-       /
-       SUM (COUNT (ComplaintID)) OVER () AS DECIMAL (5,2)
-     ) AS [Percentage]
-FROM Complaints
-WHERE Status = 'Resolved'
-GROUP BY 
-  CASE 
-    WHEN ResolutionDate <= SLADueDate 
-     THEN 'On Time' 
-    ELSE 'Late'
-  END
-ORDER BY [Total Complaints] DESC;
--- Analysis:
--- Of 13 resolved complaints, 9 (69.23%) were completed 
--- on time and 4 (30.77%) were completed late.
--- The overall SLA complicance rate was 69.23%.
-
+-- BUSINESS REQUEST:
+-- Report resolved complaints by SLA result, showing their share of all resolved
+-- complaints and overall compliance among resolved cases with known dates.
+;WITH ResolvedSLA AS (
+    SELECT CASE
+        WHEN ResolutionDate IS NULL OR SLADueDate IS NULL THEN 'Unknown'
+        WHEN ResolutionDate <= SLADueDate THEN 'On Time'
+        ELSE 'Late'
+    END AS SLAResult
+    FROM Complaints
+    WHERE Status = 'Resolved'
+), SLACounts AS (
+    SELECT SLAResult, COUNT(*) AS TotalComplaints
+    FROM ResolvedSLA
+    GROUP BY SLAResult
+)
+SELECT SLAResult,
+       TotalComplaints,
+       CAST(TotalComplaints * 100.0 /
+            NULLIF(SUM(TotalComplaints) OVER (), 0) AS DECIMAL(5,2))
+           AS PercentageOfAllResolved,
+       CAST(SUM(CASE WHEN SLAResult = 'On Time' THEN TotalComplaints ELSE 0 END) OVER () * 100.0 /
+            NULLIF(SUM(CASE WHEN SLAResult <> 'Unknown' THEN TotalComplaints ELSE 0 END) OVER (), 0)
+            AS DECIMAL(5,2)) AS OverallKnownDateSLACompliancePct
+FROM SLACounts
+ORDER BY TotalComplaints DESC, SLAResult;
+-- ANALYSIS:
+-- Unknown dates remain visible in the resolved population and its distribution.
+-- The compliance percentage excludes Unknown dates; NULL means no assessable cases.
+-- The overall compliance value repeats across rows and must not be summed.
+-- Historical result: 9 on time and 4 late (69.23% compliant); rerun to verify.
 
 -- Business request:
 -- Report the total number and percentages of complaints.
@@ -1255,7 +1196,7 @@ SELECT AgreementID,
        FinanceType,
        FinanceAmount,
        CAST (
-         AVG (FinanceAmount) OVER (PARTITION BY FinanceType) AS DECIMAL (10,2)
+         AVG(CAST(FinanceAmount AS DECIMAL(19,4))) OVER (PARTITION BY FinanceType) AS DECIMAL (10,2)
        ) AS [Average Finance Amount]
 FROM FinanceAgreements
 ORDER BY FinanceType,
@@ -1282,8 +1223,8 @@ ORDER BY CustomerID ASC,
 -- Analysis:
 -- The report retains individual complaint records while 
 -- showing each customer's overall complaint count.
--- Customer 1 has raised 2 commplaints, demonstrating 
--- how repeat complaints can be indentified.
+-- Customer 1 has raised 2 complaints, demonstrating 
+-- how repeat complaints can be identified.
 
 -- Business request:
 -- Show each resolved complaint, including complaintID,
@@ -1295,7 +1236,7 @@ SELECT ComplaintID,
        ComplaintType,
       DATEDIFF (DAY, ComplaintDate, ResolutionDate) AS [Resolution Days],
       CAST (
-        AVG (DATEDIFF (DAY, ComplaintDate, ResolutionDate)) 
+        AVG (CAST(DATEDIFF (DAY, ComplaintDate, ResolutionDate) AS DECIMAL(10,2))) 
         OVER (PARTITION BY CustomerID) AS DECIMAL (10,2)
       ) AS [Customer Average Resolution Days]
 FROM Complaints 
@@ -1316,7 +1257,7 @@ SELECT CustomerID,
        ComplaintDate,
        ROW_NUMBER() OVER (
          PARTITION BY CustomerID 
-         ORDER BY ComplaintDate ASC
+         ORDER BY ComplaintDate ASC, ComplaintID ASC
       ) AS [Complaint Number]
 FROM Complaints
 ORDER BY CustomerID ASC,
@@ -1330,7 +1271,7 @@ ORDER BY CustomerID ASC,
 
 -- Business request:
 -- Produce a report showing each customer's complaint history,
--- ranking their complaints from ewest to oldest.
+-- ranking their complaints from newest to oldest.
 -- Display all complaints with the most recent numbered 1.
 SELECT CustomerID,
        ComplaintID,
@@ -1338,7 +1279,7 @@ SELECT CustomerID,
        Status,
        ROW_NUMBER () OVER (
          PARTITION BY CustomerID 
-         ORDER BY ComplaintDate DESC
+         ORDER BY ComplaintDate DESC, ComplaintID DESC
       ) AS [Complaint Rank]
 FROM Complaints
 ORDER BY CustomerID ASC,
@@ -1353,7 +1294,7 @@ ORDER BY CustomerID ASC,
 
 
 -- Business request:
--- Rank finanace agreements by value within each finance type.
+-- Rank finance agreements by value within each finance type.
 -- The highest value agreements should rank first, with
 -- identical finance amounts sharing the same rank.
 SELECT AgreementID,
@@ -1368,7 +1309,7 @@ ORDER BY FinanceType ASC,
         [Finance Rank] ASC,
          AgreementID ASC
 -- Analysis:
--- RANK () ranks agreements seporatley for HP and PCP.
+-- RANK () ranks agreements separately for HP and PCP.
 -- Agreement 2 is the highest-value HP agreement at £24,000, 
 -- while agreement 13 is the highest-value PCP agreement at £33,500.
 -- HP agreements 6 and 17 both have a finance amount of £12,500 and 
@@ -1387,13 +1328,13 @@ SELECT AgreementID,
        DENSE_RANK () OVER (
          PARTITION BY FinanceType
          ORDER BY FinanceAmount DESC
-       ) AS [Dense Finanace Rank]
+       ) AS [Dense Finance Rank]
 FROM FinanceAgreements 
 ORDER BY FinanceType ASC,
-        [Dense Finanace Rank] ASC,
+        [Dense Finance Rank] ASC,
         AgreementID ASC;
 -- Analysis:
--- DENSE_RANK () ranks finance agreements seporatley for HP and PCP, 
+-- DENSE_RANK () ranks finance agreements separately for HP and PCP, 
 -- from highest to lowest finance amount.
 -- Agreement 2 is the highest-value HP agreement at £24,000, while 
 -- agreement 13 is the highest-value PCP agreement at £33,500.
@@ -1407,38 +1348,38 @@ ORDER BY FinanceType ASC,
 -- SUBQUERIES AND COMMON TABLE EXPRESSIONS (CTEs)
 --==========================================================================================
 
--- Businesss request:
+-- Business request:
 -- Identify all finance agreements where the finance amount exceeds the overall average finance amount, 
 -- allowing the finance manager to identify higher-value agreements.
 SELECT AgreementID,
        FinanceAmount
 FROM FinanceAgreements
 WHERE FinanceAmount > (
-    SELECT AVG (FinanceAmount) 
+    SELECT AVG(CAST(FinanceAmount AS DECIMAL(19,4))) 
     FROM Financeagreements
 );
 -- Analysis:
 -- Used a subquery within the WHERE clause to calculate the overall average finance amount. 
 -- The outer query the filters individual agreements against the calculated value.
 -- The average was £21,641.18, with 9 agreements exceeding it. 
--- The subquery ensures the comparison updates automatically when the unerlying data changes.
+-- The subquery ensures the comparison updates automatically when the underlying data changes.
     
 
 -- Business request:
 -- Identify all finance agreements where the finance amount is below the overall average,
--- allowing the finanace manager to identify lower-value agreeements.
+-- allowing the finance manager to identify lower-value agreeements.
 SELECT AgreementID,
        FinanceAmount
 FROM FinanceAgreements
 WHERE FinanceAmount < (
-    SELECT AVG (FinanceAmount)
+    SELECT AVG(CAST(FinanceAmount AS DECIMAL(19,4)))
     FROM FinanceAgreements
 );
 -- Analysis:
 -- Used a subquery within the WHERE clause to calculate the overall average finance amount of £21,641.18.
 -- The outer query identified 8 agreements below the this average.
 -- The average was £21,641.18, with 9 agreements exceeding it.
--- The comparison updates automatically when the unerlying data changes.
+-- The comparison updates automatically when the underlying data changes.
 
 
 -- Business request:
@@ -1450,7 +1391,7 @@ SELECT AgreementID,
 FROM FinanceAgreements
 WHERE FinanceType = 'PCP' 
   AND FinanceAmount > (
-     SELECT AVG (FinanceAmount)
+     SELECT AVG(CAST(FinanceAmount AS DECIMAL(19,4)))
      FROM FinanceAgreements
      WHERE FinanceType = 'HP'
 );
@@ -1472,7 +1413,7 @@ SELECT AgreementID,
 FROM FinanceAgreements 
 WHERE FinanceType = 'HP'
   AND FinanceAmount < (
-    SELECT AVG (FinanceAmount)
+    SELECT AVG(CAST(FinanceAmount AS DECIMAL(19,4)))
     FROM FinanceAgreements
     WHERE FinanceType = 'PCP'
     
@@ -1481,44 +1422,9 @@ ORDER BY FinanceAmount DESC;
 -- Analysis:
 -- Used a subquery to calculate the average finance amount for PCP agreements.
 -- The outer query filtered HP agreements below this average and ordered results
--- by finance amount in decending order.
+-- by finance amount in descending order.
 -- All 7 HP agreements met the criteria, with the highest matching finance amount being £24,000.
      
-
--- Business request:
--- Identify all customers who have submitted atleast once complaint. Display their customer ID 
--- and name, ordered alphabetically by customer name.
-SELECT CustomerID,
-       CustomerName
-FROM Customers 
-WHERE CustomerID IN (
-    SELECT CustomerID
-    FROM Complaints
-)
-ORDER BY CustomerName ASC;
--- Analysis:
--- Used an IN subquery to retrieve customer IDs from the complaints table and filter
--- the customers table to those with atleast one complaint. The query returned 
--- 15 customers, each appearing once regardless of how many complaints they submitted.
--- Results were ordered alphabetically by customer name.
-
-
--- Business request:
--- Identify all customers who have never submitted a complaint.
--- Display their customer ID and name, ordered alphabetically by customer name.
-SELECT CustomerID,
-       CustomerName
-FROM Customers
-WHERE CustomerID NOT IN (
-    SELECT CustomerID
-    FROM Complaints
-)
-ORDER BY CustomerName ASC;
--- Analysis:
--- Used a NOT IN subquery to identify customers whos IDs do no appear in the complaints table.
--- The query returned zero records, indicating that all 15 customers in the dataset have 
--- submitted at least one complaint.
-
 
 -- Business request:
 -- Identify all customers who have submitted at least one complaint.
@@ -1533,7 +1439,7 @@ WHERE EXISTS (
 )
 ORDER BY CustomerName ASC;
 -- Analysis: 
--- Used an EXISTS correlated subquery to indentify customers with atleast one matching record
+-- Used an EXISTS correlated subquery to identify customers with at least one matching record
 -- in the complaints table.
 -- The inner query compares customer ID between the customer and complaints tables.
 -- The query returned 15 customers, confirming that every customer in the current dataset 
@@ -1553,7 +1459,7 @@ WHERE NOT EXISTS (
 )
 ORDER BY CustomerName ASC;
 -- Analysis:
--- Used a NOT EXISTS correlated subquery to indentify customers with no matching records
+-- Used a NOT EXISTS correlated subquery to identify customers with no matching records
 -- in the complaints table.
 -- The inner query compares customer ID between the customer and complaints tables.
 -- The query returned zero records, confirming that all 15 customers have submitted at least one complaint.
@@ -1573,7 +1479,7 @@ WHERE EXISTS (
 )
 ORDER BY CustomerName ASC;
 -- Analysis:
--- Used an EXISTS correlated subquery to indentify customers with atleast one upheld complaint.
+-- Used an EXISTS correlated subquery to identify customers with at least one upheld complaint.
 -- Matched customer ID between the customers and complaints tables and filtered the inner
 -- query to Outcome = 'Upheld'.
 -- The query returned 6 customers, each customer appears only once, regardless of how many 
@@ -1599,36 +1505,10 @@ WHERE EXISTS (
  )
  ORDER BY CustomerName ASC;
 -- Analysis:
--- Used EXISTS to identify customers with at least one complaint and NOT EXISTS to exculde customers 
+-- Used EXISTS to identify customers with at least one complaint and NOT EXISTS to exclude customers 
 -- with any upheld complaints.
 -- Both correlated subquerys match customer ID between the customers and complaints tables.
 -- The query returned 9 customers who have submitted complaints but have no upheld outcomes recorded.
-
-
--- Business request:
--- Identify finance agreements where the FinanceAmount is above the average FinanceAmount
--- for their own finance type (HP or PCP).
--- Display agreement ID, finance type, and finance amount, ordered by finance amount 
--- from highest to lowest.
-SELECT AgreementID,
-       FinanceType,
-       FinanceAmount
-FROM FinanceAgreements AS fin
-WHERE fin.FinanceAmount > (
-     SELECT AVG (avgfin.FinanceAmount)
-     FROM FinanceAgreements AS avgfin
-     WHERE avgfin.FinanceType = fin.FinanceType
-)
-ORDER BY FinanceAmount DESC;
--- Analysis:
--- Used a correlated scalar subquery with AVG (FinanceAmount)to calculate the average 
--- finance amount for each agreement's own finance type.
--- Used different aliases (fin & avgfin) to distinguish between the outer and inner
--- references to the finance agreements table.
--- Compared each agreement's FinanceAmount against its corresponding finance type 
--- average, returning only agreements above that average.
--- The query returned 8 agreements above the average for their own finance type, consisting
--- of 5 PCP agreements and 3 HP agreements.
 
 
 -- Business request:
@@ -1641,39 +1521,16 @@ SELECT AgreementID,
        FinanceAmount
 FROM FinanceAgreements AS fin
 WHERE FinanceAmount < (
-    SELECT AVG (avgfin.FinanceAmount)
+    SELECT AVG(CAST(avgfin.FinanceAmount AS DECIMAL(19,4)))
     FROM FinanceAgreements AS avgfin
     WHERE fin.FinanceType = avgfin.FinanceType
 )
 ORDER BY FinanceAmount ASC;
 -- Analysis:
--- Used a correlated scalar subquery with AVG (FinanceAmount) to calculate the 
+-- Used a correlated scalar subquery with AVG(CAST(FinanceAmount AS DECIMAL(19,4))) to calculate the 
 -- average finance amount for each agreements own finance type.
 -- Filtered agreements where finance amount is below the corresponding finance type average.
 -- The query returned 9 agreements consisting of 5 PCP agreements and 4 HP agreements.
-
-
--- Business request:
--- Identify customers who have at least one financeagreement with a finance amount 
--- greater than £25,000.
--- Display customer ID and customer name, ordered alphabetically by customer name, 
--- with each customer appearing only once.
-SELECT CustomerID,
-       CustomerName
-FROM Customers AS cust
-WHERE CustomerID IN (
-      SELECT CustomerID
-      FROM FinanceAgreements AS fin
-      WHERE FinanceAmount > 25000.00
-)
-ORDER BY CustomerName ASC;
--- Analysis:
--- Used an IN subquery to identify customers associated with finance agreements 
--- exceeding £25,000.
--- The subquery filters finance agreements by finance amount and returns matching customer IDs.
--- The outer query retrieves the corresponding customer details without duplicating customers
--- who have multiple qualifying agreements.
--- The query returned 5 customers, ordered alphabetically by customer name.
 
 
 -- Business request:
@@ -1725,29 +1582,30 @@ ORDER BY cust.CustomerName ASC;
 
 
 -- Business request:
--- Identify customers with atleast one active finance agreement where the finance amount 
+-- Identify customers with at least one active finance agreement where the finance amount 
 -- exceeds the average for its own finance type, including all agreement statuses in the
 -- average calculation.
 SELECT cust.CustomerID,
        cust.CustomerName
 FROM Customers AS cust
 WHERE cust.CustomerID IN (
-    SELECT cust.CustomerID 
+    SELECT fin.CustomerID
     FROM FinanceAgreements AS fin
     WHERE AgreementStatus = 'Active'
   AND fin.FinanceAmount > (
-    SELECT AVG (avgfin.FinanceAmount)
+    SELECT AVG(CAST(avgfin.FinanceAmount AS DECIMAL(19,4)))
     FROM FinanceAgreements AS avgfin
     WHERE fin.FinanceType = avgfin.FinanceType
  ))
 ORDER BY cust.CustomerName ASC;
 -- Analysis: Used IN to identify qualifying customers and a correlated AVG subquery to 
 -- compare each active agreement against the average for its own finance type.
--- Returned 5 customers, sorted alphabetically.
+-- Returned 5 qualifying customers, sorted alphabetically.
+-- Customers are sorted alphabetically.
 
 
 -- Business request:
--- Identify customers who have atleast one active finance agreement and whos every active finance
+-- Identify customers who have at least one active finance agreement and whose every active finance
 -- agreement has a finance amount strictly below the average for its own finance type.
 -- Calculate each finance type's average using all agreements, including Active and Settled.
 SELECT cust.CustomerID,
@@ -1764,19 +1622,21 @@ WHERE EXISTS (
     FROM FinanceAgreements AS failfin
     WHERE cust.CustomerID =  failfin.CustomerID
  AND failfin.AgreementStatus = 'Active' 
- AND failfin.FinanceAmount >= (
-    SELECT AVG (avgfin.FinanceAmount)
+ AND (failfin.FinanceAmount IS NULL OR failfin.FinanceType IS NULL
+       OR failfin.FinanceAmount >= (
+    SELECT AVG(CAST(avgfin.FinanceAmount AS DECIMAL(19,4)))
     FROM FinanceAgreements AS avgfin
-    WHERE avgfin.FinanceType = failfin.FinanceType 
-  )
+    WHERE avgfin.FinanceType = failfin.FinanceType
+  ))
 )
 ORDER BY CustomerName ASC;
 -- Analysis:
--- Used a correlated EXISTS subquery to confirm that each customer has atleast one active finnance agreement.
--- Used a correlated NOT EXISTS subquery to exclude customers with any active agreement whos finance amount is
+-- Used a correlated EXISTS subquery to confirm that each customer has at least one active finance agreement.
+-- Used a correlated NOT EXISTS subquery to exclude customers with any active agreement whose finance amount is
 -- greater than or equal to the average for its finance type. A nested AVG () subquery calculates the average across
 -- all agreements of the matching finance type, regardless of the agreement status. This ensures every active agreement
--- belonging to a qualifying customer is strictly below its respective average. 
+-- belonging to a qualifying customer is strictly below its respective average.
+-- Customers with an active agreement of unknown amount or finance type are excluded. 
 
 
 -- Business request:
@@ -1795,13 +1655,13 @@ AND NOT EXISTS (
     SELECT 1
     FROM FinanceAgreements AS checkfin
     WHERE cust.CustomerID = checkfin.CustomerID 
-      AND checkfin.FinanceAmount > 25000.00
+      AND (checkfin.FinanceAmount IS NULL OR checkfin.FinanceAmount > 25000.00)
 )
 ORDER BY cust.CustomerName ASC;
 -- Analysis:
--- Used a correlated EXISTS subquery to confirm that each customer has atleast one active finnance agreement.
--- Used a correlated NOT EXISTS subquery to exclude customers with any agreement whos finance amount is
--- exceeds £25,000.
+-- Used a correlated EXISTS subquery to confirm that each customer has at least one finance agreement.
+-- Used NOT EXISTS to exclude customers with any agreement amount
+-- above £25,000, or with an unknown amount.
 -- The query returned 10 customers, sorted alphabetically.
 
 
@@ -1809,7 +1669,7 @@ ORDER BY cust.CustomerName ASC;
 -- Showing all resolved complaints where the outcome was Upheld.
 -- Include all complaint details and be sorted by ResolutionDate, 
 -- with the most recently resolved complaints appearing first.
-WITH ResolvedComplaints AS (
+;WITH ResolvedComplaints AS (
     SELECT *
     FROM Complaints 
     WHERE Status = 'Resolved'
@@ -1830,7 +1690,7 @@ ORDER BY ResolutionDate DESC;
 -- with active finance agreements worth more than £15,000.
 -- The report should display CustomerName, FinanceType and
 -- FinanceAmount, ordered by FinanceAmount from highest to lowest.
-WITH ActiveAgreements AS (
+;WITH ActiveAgreements AS (
     SELECT fin.FinanceType,
            fin.FinanceAmount,
            fin.CustomerID
@@ -1863,7 +1723,7 @@ ORDER BY fin.FinanceAmount DESC;
 -- Only customers with at least 2 complaints should be included.
 -- The report should display CustomerName and TotalComplaints,
 -- ordered by TotalComplaints from highest to lowest.
-WITH CustomerComplaintCounts AS (
+;WITH CustomerComplaintCounts AS (
      SELECT COUNT (ComplaintID) AS TotalComplaints,
             CustomerID
      FROM Complaints AS comp
@@ -1898,9 +1758,9 @@ ORDER BY TotalComplaints DESC;
 -- FinanceAmount and AverageFinanceAmount.
 -- Include both Active and Settled agreements.
 -- Order the results by FinanceAmount from highest to lowest.
-WITH FinanceTypeAverages AS (
+;WITH FinanceTypeAverages AS (
     SELECT FinanceType,
-          AVG (FinanceAmount) AS AverageFinanceAmount
+          AVG(CAST(FinanceAmount AS DECIMAL(19,4))) AS AverageFinanceAmount
     FROM FinanceAgreements AS avgfin
     GROUP BY FinanceType 
 )
@@ -1916,7 +1776,7 @@ ORDER BY FinanceAmount DESC;
 -- Analysis:
 -- Created a Common Table Expression (CTE) named FinanceTypeAverages
 -- to calculate the average FinanceAmount for each FinanceType.
--- Used AVG(FinanceAmount) and GROUP BY FinanceType to produce
+-- Used AVG(CAST(FinanceAmount AS DECIMAL(19,4))) and GROUP BY FinanceType to produce
 -- separate average values for PCP and HP agreements.
 -- Used an INNER JOIN to connect individual finance agreements
 -- to their corresponding FinanceType averages.
@@ -1940,10 +1800,10 @@ ORDER BY FinanceAmount DESC;
 -- distort the average finance amount.
 -- Display zero instead of NULL where no complaints exist.
 -- Order the results by total complaints, highest first.
-WITH FinanceTypeAverages AS (
+;WITH FinanceTypeAverages AS (
       SELECT avgfin.FinanceType,
              CAST (
-               AVG (FinanceAmount) AS DECIMAL (10,2)
+               AVG(CAST(FinanceAmount AS DECIMAL(19,4))) AS DECIMAL (10,2)
              ) AS [AverageFinanceAmount]
       FROM FinanceAgreements AS avgfin
       GROUP BY FinanceType
@@ -1963,7 +1823,6 @@ FROM FinanceTypeAverages AS fta
 LEFT JOIN FinanceTypeComplaints  ftc
   ON fta.FinanceType = ftc.FinanceType
 ORDER BY TotalComplaints DESC;
-
 -- Analysis:
 -- Created two Common Table Expressions (CTEs) to calculate
 -- finance averages and complaint totals independently.
@@ -1994,23 +1853,23 @@ ORDER BY TotalComplaints DESC;
 -- Correcting Inflated Averages
 -- ====================================================================================================
 
--- Original Query Reference: Line 625
+-- Original Query Reference: Average agreement value for agreements with resolved complaints
 --
 -- Issue Identified:
 -- Joining FinanceAgreements to Complaints creates
 -- duplicate agreement rows where an agreement has
 -- multiple complaints.
 --
--- This can distort AVG(FinanceAmount), as some
+-- This can distort AVG(CAST(FinanceAmount AS DECIMAL(19,4))), as some
 -- agreements contribute to the average more than once.
 --
 -- Objective:
 -- Rewrite the original query using CTEs to ensure
 -- each finance agreement contributes only once
 -- to the average calculation.
-WITH FinanceTypeAverage AS (
+;WITH FinanceTypeAverage AS (
       SELECT fin.FinanceType,
-             CAST(AVG (FinanceAmount) AS DECIMAL (10,2)
+             CAST(AVG(CAST(FinanceAmount AS DECIMAL(19,4))) AS DECIMAL (10,2)
              ) AS AverageFinanceAmount 
       FROM FinanceAgreements AS fin
         WHERE EXISTS (
@@ -2020,13 +1879,13 @@ WITH FinanceTypeAverage AS (
         AND Status = 'Resolved'
 )
       GROUP BY FinanceType 
-      HAVING AVG (FinanceAmount) > 20000.00)
+      HAVING AVG(CAST(FinanceAmount AS DECIMAL(19,4))) > 20000.00)
 
 SELECT *
 FROM FinanceTypeAverage
 ORDER BY AverageFinanceAmount DESC;
 -- Analysis:
--- Revisited the original query at line 842, which calculated
+-- Revisited the superseded joined-average query, which calculated
 -- the average finance amount for agreements associated
 -- with resolved complaints.
 --
@@ -2078,7 +1937,7 @@ ORDER BY AverageFinanceAmount DESC;
 
 
 -- Business Request:
--- Revisit the original query at line 674 to compare the
+-- Revisit the superseded joined-average query to compare the
 -- average finance agreement amounts for agreements with
 -- complaints against agreements without complaints.
 --
@@ -2091,7 +1950,7 @@ ORDER BY AverageFinanceAmount DESC;
 --
 -- Display the average finance amount for both groups,
 -- ordered from highest to lowest.
-  WITH AverageAgreementAmount AS (
+  ;WITH AverageAgreementAmount AS (
   SELECT fin.FinanceAmount,
           CASE 
               WHEN EXISTS (
@@ -2105,7 +1964,7 @@ ORDER BY AverageFinanceAmount DESC;
   FROM FinanceAgreements AS fin
   )
 SELECT [Complaint Status],
-       CAST (AVG (FinanceAmount) AS DECIMAL (10,2)) AS [Average Finance Amount]
+       CAST (AVG(CAST(FinanceAmount AS DECIMAL(19,4))) AS DECIMAL (10,2)) AS [Average Finance Amount]
 FROM AverageAgreementAmount
 GROUP BY [Complaint Status]
 ORDER BY [Average Finance Amount] DESC;
@@ -2135,7 +1994,7 @@ ORDER BY [Average Finance Amount] DESC;
 -- EXISTS allowed the query to identify matching complaints
 -- without duplicating finance agreement rows.
 --
--- The main SELECT used AVG(FinanceAmount) and GROUP BY
+-- The main SELECT used AVG(CAST(FinanceAmount AS DECIMAL(19,4))) and GROUP BY
 -- [Complaint Status] to calculate the average for each
 -- group, ordering the results from highest to lowest.
 --
@@ -2163,107 +2022,171 @@ ORDER BY [Average Finance Amount] DESC;
 -- relationships.
 
 
-
- 
-
-
-
-
-
-
-
-    
-
-
-
-
-
-
-
-
-
-
-
-
-
-       
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
+-- Business Request:
+-- Compare the average total finance agreement value for
+-- customers who have made complaints against customers
+-- who have never made a complaint.
+--
+-- Calculate each customer's total finance agreement value
+-- before calculating the average for each complaint group.
+--
+-- Include customers without finance agreements, treating
+-- their total finance value as zero.
+--
+-- Ensure each customer is counted only once, regardless
+-- of how many finance agreements or complaints they have.
+--
+-- Display ComplaintStatus, AverageFinanceTotals and
+-- TotalCustomers, ordered by the highest average first.
+;WITH CustomersTotal AS (
+    SELECT cust.CustomerID,
+           COALESCE (SUM (FinanceAmount), 0) AS FinanceTotals
+    FROM Customers AS cust
+       LEFT JOIN FinanceAgreements AS fin
+         ON fin.CustomerID = cust.CustomerID
+    GROUP BY cust.CustomerID      
+),
+CustomerComplaintStatus AS (
+    SELECT CustomerID,
+           CustomerName,
+      CASE 
+         WHEN EXISTS (
+              SELECT 1
+              FROM Complaints AS comp
+              WHERE comp.CustomerID = cust.CustomerID
+     ) 
+        THEN 'Has Complaint'
+        ELSE 'No Complaint' 
+    END AS ComplaintStatus 
+    FROM Customers AS cust 
+)
+
+SELECT ComplaintStatus,
+       CAST (AVG(CAST(fintotal.FinanceTotals AS DECIMAL(19,4))) AS DECIMAL (10,2)) AS AverageFinanceTotals,
+       COUNT (custcomp.CustomerID) AS TotalCustomers 
+FROM CustomerComplaintStatus AS custcomp
+   LEFT JOIN CustomersTotal AS fintotal
+         ON fintotal.CustomerID = custcomp.CustomerID
+GROUP BY ComplaintStatus
+ORDER BY AverageFinanceTotals DESC;
+
+-- Analysis:
+-- Created two CTEs to calculate average customer finance
+-- totals based on complaint history.
+--
+-- The first CTE used a LEFT JOIN between Customers and
+-- FinanceAgreements to calculate the total finance amount
+-- for each customer using SUM and GROUP BY.
+--
+-- COALESCE was used to return zero for customers without
+-- finance agreements.
+--
+-- The second CTE used CASE WHEN EXISTS with a correlated
+-- subquery to identify whether each customer had made
+-- at least one complaint.
+--
+-- Customers were classified as either 'Has Complaint'
+-- or 'No Complaint'.
+--
+-- The main query joined both CTEs using CustomerID,
+-- calculated AVG(FinanceTotals) for each complaint group,
+-- and counted the customers within each group.
+--
+-- Results:
+-- Has Complaint:
+-- Average customer finance total = 24,526.67
+-- Total customers = 15
+--
+-- No Complaint:
+-- No results returned for this group.
+--
+-- The results indicate that all customers in the
+-- current dataset have at least one complaint.
+--
+-- A separate validation query was performed to confirm
+-- the number of unique customers with complaints.
+-- Data Validation:
+-- Verify the number of unique customers in the database
+-- and compare this against the number of unique customers
+-- who have submitted at least one complaint.
+--
+-- DISTINCT prevents customers with multiple complaints
+-- from being counted more than once.
+
+SELECT
+    COUNT(DISTINCT cust.CustomerID) AS TotalCustomers,
+    COUNT(DISTINCT comp.CustomerID) AS CustomersWithComplaints
+FROM Customers AS cust
+LEFT JOIN Complaints AS comp
+    ON cust.CustomerID = comp.CustomerID;
+-- Validation Results:
+-- Total customers = 15
+-- Customers with complaints = 15
+--
+-- All 15 customers have submitted at least one complaint.
+-- This confirms why the main CTE query returned only
+-- the 'Has Complaint' group.
+--
+-- The absence of a 'No Complaint' row is consistent
+-- with the current sample data.
+
+
+-- BUSINESS REQUEST:
+-- Management requires a report showing the most recent complaint
+-- submitted by each customer, alongside their total complaint count.
+--
+-- Include the customer's name, complaint reference, complaint date,
+-- status, outcome and total number of complaints.
+--
+-- Where a customer has multiple complaints on the same date,
+-- use the highest ComplaintID to identify the most recent.
+--
+-- Each customer should appear once, with the most recent
+-- complaint dates appearing first.
+USE MotorFinanceComplaints
+GO
+;WITH LatestComplaint AS (
+    SELECT CustomerID,
+           ComplaintID,
+           ComplaintDate,
+           Status,
+           Outcome,
+           ROW_NUMBER () OVER (
+              PARTITION BY CustomerID
+              ORDER BY ComplaintDate DESC, ComplaintID DESC
+              ) AS ComplaintRank,
+           COUNT (*) OVER (
+              PARTITION BY CustomerID
+              ) AS CustomerComplaintTotal 
+     FROM Complaints 
+     )
+
+SELECT lc.CustomerID,
+       cust.CustomerName,
+       lc.ComplaintID,
+       lc.ComplaintDate,
+       lc.Status,
+       lc.Outcome,
+       lc.CustomerComplaintTotal
+FROM LatestComplaint AS lc
+INNER JOIN Customers AS cust
+    ON lc.CustomerID = cust.CustomerID
+WHERE lc.ComplaintRank = 1
+ORDER BY lc.ComplaintDate DESC, lc.ComplaintID DESC;
+-- ANALYSIS:
+-- A CTE was used to calculate complaint rankings and totals
+-- for each customer.
+--
+-- ROW_NUMBER() identifies the most recent complaint per customer,
+-- ordering by ComplaintDate and then ComplaintID descending.
+--
+-- COUNT(*) OVER (PARTITION BY CustomerID) calculates each
+-- customer's total complaints without grouping away individual rows.
+--
+-- The main query filters ComplaintRank = 1 to return only
+-- the most recent complaint for each customer.
+--
+-- An INNER JOIN retrieves the customer's name.
+--
+-- This allows management to review recent complaint activity
+-- alongside each customer's overall complaint volume.
